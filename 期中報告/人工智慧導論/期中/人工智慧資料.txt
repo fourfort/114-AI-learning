@@ -1,0 +1,83 @@
+1.資料預處理
+
+#對 Geography利用眾數補值，Age用中位數來補值，而 HasCrCard、IsActiveMember 則是用衆數來補值
+# Fill missing values
+# Geography: Mode Imputation
+df['Geography'] = df['Geography'].fillna(df['Geography'].mode()[0])
+
+# Age: Median Imputation
+df['Age'] = df['Age'].fillna(df['Age'].median())
+
+# HasCrCard: Mode Imputation
+df['HasCrCard'] = df['HasCrCard'].fillna(df['HasCrCard'].mode()[0])
+
+# IsActiveMember: Mode Imputation
+df['IsActiveMember'] = df['IsActiveMember'].fillna(df['IsActiveMember'].mode()[0])
+
+2.數據類型轉換
+
+#資料中的 Gender 的欄位進行Label Encoding，而 Geography 的欄位則是進行 One-hot Enocoding
+# Label Encoding for 'Gender'
+le = LabelEncoder()
+df['Gender'] = le.fit_transform(df['Gender'])
+
+# One-Hot Encoding for 'Geography'
+ohe = OneHotEncoder(handle_unknown='ignore', sparse_output=False) # sparse=False for direct array output
+geo_encoded = ohe.fit_transform(df[['Geography']])
+geo_encoded_df = pd.DataFrame(geo_encoded, columns=ohe.get_feature_names_out(['Geography']))
+
+# Concatenate the encoded 'Geography' columns with the original DataFrame
+df = pd.concat([df, geo_encoded_df], axis=1)
+
+# Remove the original 'Geography' column
+df = df.drop(['Geography'], axis=1)
+
+3.模型選擇與訓練
+   準確度比較   DT                 RF                 SVM                SVM（調參）
+1:9 1001:9001   0.8571428571428571 0.8621378621378621 0.8531468531468531 0.8551448551448552
+2:8 2001:8001   0.8555722138930535 0.8600699650174912 0.8595702148925537 0.8600699650174912
+3:7 3001:7001   0.8563812062645785 0.8563812062645785 0.8620459846717761 0.862379206931023
+4:6 4001:6001   0.8545363659085229 0.8520369907523119 0.8585353661584604 0.8590352411897025
+
+
+
+4.最終結果
+(DT)
+
+Accuracy: 0.8571428571428571
+
+Precision: 0.8160919540229885
+
+Recall: 0.35858585858585856
+
+F1 Score: 0.4982456140350877
+
+(RF)
+
+Accuracy: 0.8621378621378621
+
+Precision: 0.7884615384615384
+
+Recall: 0.41414141414141414
+
+F1 Score: 0.543046357615894
+
+(SVM)
+
+Accuracy: 0.8620459846717761
+
+Precision: 0.803921568627451
+
+Recall: 0.41
+
+F1 Score: 0.543046357615894
+
+(SVM(調參))
+
+Accuracy: 0.862379206931023
+
+Precision: 0.7968253968253968
+
+Recall: 0.41833333333333333
+
+F1 Score: 0.5486338797814208
